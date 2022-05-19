@@ -3,6 +3,7 @@ import json
 import os
 from typing import Dict, List, Type
 
+import optuna
 import numpy as np
 from sklearn.datasets import fetch_openml
 from sklearn.model_selection import train_test_split
@@ -25,9 +26,13 @@ class Tuner:
     }
 
     def __init__(self,
-                 result_dir: str) -> None:
+                 result_dir: str = './tuning_results',
+                 n_epoch: int = 100,
+                 batch_size: int = 2048) -> None:
         os.makedirs(result_dir, exist_ok=True)
         self.result_dir = result_dir
+        self.n_epochs = n_epoch
+        self.batch_size = batch_size
 
         t_delta = datetime.timedelta(hours=9)
         self.jst = datetime.timezone(t_delta, 'JST')
@@ -41,6 +46,14 @@ class Tuner:
         self.train_x, self.val_x, train_y, val_y = train_test_split(train_val_x, train_val_y, test_size=0.2, random_state=2)
         self.train_y = np.eye(10)[train_y].astype(np.int32)
         self.val_y = np.eye(10)[val_y].astype(np.int32)
+
+    def optimize(self):
+        study = optuna.create_study(study_name='study_0519',
+                                    storage=f'sqlite:///{self.result_dir}/optuna_study_0519.db',
+                                    load_if_exists=True,
+                                    direction='maximize')
+        study.optimize(self.objective, n_trials=100)
+        return
 
     def objective(self, trial):
         # MLP
@@ -96,8 +109,8 @@ class Tuner:
                          self.train_y.copy(),
                          self.val_x.copy(),
                          self.val_y.copy(),
-                         n_epoch=50,
-                         batch_size=2048)
+                         n_epoch=self.n_epochs,
+                         batch_size=self.batch_size)
 
         # 記録
         max_acc_score = 0
@@ -129,13 +142,5 @@ class Tuner:
 
 
 if __name__ == '__main__':
-    import optuna
-
-    save_dir = './tuning_results'
-    study = optuna.create_study(study_name='study_0519',
-                                storage=f'sqlite:///{save_dir}/optuna_study_0519.db',
-                                load_if_exists=True,
-                                direction='maximize')
-
-    tuner = Tuner(save_dir)
-    study.optimize(tuner.objective, n_trials=100)
+    tuner = Tuner()
+    tuner.optimize()
