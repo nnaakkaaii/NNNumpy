@@ -44,8 +44,10 @@ def engine(net: Module,
             sum_loss += loss
             pred_y.extend(np.argmax(y, axis=1))
 
-        history['train_loss'] = loss = sum_loss / train_n
-        history['train_acc'] = accuracy = np.sum(np.eye(10)[pred_y] * train_y[perm]) / train_n
+        loss = sum_loss / train_n
+        accuracy = np.sum(np.eye(10)[pred_y] * train_y[perm]) / train_n
+        history['train_loss'].append(loss)
+        history['train_acc'].append(accuracy)
 
         print('Train loss %.3f, accuracy %.4f | ' % (loss, accuracy), end="")
 
@@ -65,8 +67,11 @@ def engine(net: Module,
             sum_loss += loss
             pred_y.extend(np.argmax(y, axis=1))
 
-        history['test_loss'] = loss = sum_loss / test_n
-        history['test_acc'] = accuracy = np.sum(np.eye(10)[pred_y] * test_y) / test_n
+        loss = sum_loss / test_n
+        accuracy = np.sum(np.eye(10)[pred_y] * test_y) / test_n
+        history['test_loss'].append(loss)
+        history['test_acc'].append(accuracy)
+
         print('Test loss %.3f, accuracy %.4f' % (loss, accuracy))
 
     return history
