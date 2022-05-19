@@ -1,7 +1,7 @@
 import numpy as np
 
 from ..base import Module
-from .functional import im2col, col2im
+from .functional import col2im, im2col
 
 
 class MeanPool(Module):

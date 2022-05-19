@@ -1,17 +1,22 @@
+from typing import Dict, List
+
 import numpy as np
 
-from .base import Module, Loss, Optimizer
+from .base import Loss, Module, Optimizer, Transform
 
 
 def engine(net: Module,
            criterion: Loss,
            optimizer: Optimizer,
+           transform: Transform,
            train_x: np.ndarray,
            train_y: np.ndarray,
            test_x: np.ndarray,
            test_y: np.ndarray,
            n_epoch: int,
-           batch_size: int) -> float:
+           batch_size: int) -> Dict[str, List[float]]:
+
+    history = {'train_loss': [], 'train_acc': [], 'test_loss': [], 'test_acc': []}
 
     accuracy = 0.
     train_n = len(train_x)
@@ -28,7 +33,7 @@ def engine(net: Module,
         net.train()
 
         for i in range(0, train_n, batch_size):
-            x = train_x[perm[i:i+batch_size]]
+            x = transform(train_x[perm[i:i+batch_size]])
             t = train_y[perm[i:i+batch_size]]
 
             y = net(x)
@@ -40,10 +45,10 @@ def engine(net: Module,
             sum_loss += loss
             pred_y.extend(np.argmax(y, axis=1))
 
-        loss = sum_loss / train_n
-        accuracy = np.sum(np.eye(10)[pred_y] * train_y[perm]) / train_n
+        history['train_loss'] = loss = sum_loss / train_n
+        history['train_acc'] = accuracy = np.sum(np.eye(10)[pred_y] * train_y[perm]) / train_n
 
-        print('Train loss %.3f, accuracy %.4f | ' %(loss, accuracy), end="")
+        print('Train loss %.3f, accuracy %.4f | ' % (loss, accuracy), end="")
 
         # TEST
         sum_loss = 0
@@ -61,8 +66,8 @@ def engine(net: Module,
             sum_loss += loss
             pred_y.extend(np.argmax(y, axis=1))
 
-        loss = sum_loss / test_n
-        accuracy = np.sum(np.eye(10)[pred_y] * test_y) / test_n
-        print('Test loss %.3f, accuracy %.4f' %(loss, accuracy))
+        history['test_loss'] = loss = sum_loss / test_n
+        history['test_acc'] = accuracy = np.sum(np.eye(10)[pred_y] * test_y) / test_n
+        print('Test loss %.3f, accuracy %.4f' % (loss, accuracy))
 
-    return accuracy
+    return history

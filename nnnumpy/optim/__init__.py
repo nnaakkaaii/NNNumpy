@@ -2,7 +2,7 @@ from typing import List
 
 import numpy as np
 
-from ..base import Parameter, Optimizer
+from ..base import Optimizer, Parameter
 
 
 class SGDOptimizer(Optimizer):
@@ -22,13 +22,13 @@ class AdamOptimizer(Optimizer):
         self.beta1 = beta1  # mの減衰率
         self.beta2 = beta2  # vの減衰率
         self.iter = 0  # 試行回数を初期化
-        self.m = {i: np.zeros_like(p.param) for i, p in enumerate(parameters)}  # モーメンタム
-        self.v = {i: np.zeros_like(p.param) for i, p in enumerate(parameters)}  # 適合的な学習係数
+        self.m = [np.zeros_like(p.param) for p in parameters]  # モーメンタム
+        self.v = [np.zeros_like(p.param) for p in parameters]  # 適合的な学習係数
 
     def step(self):
-        self.iter += 1 # 更新回数をカウント
+        self.iter += 1  # 更新回数をカウント
         lr_t = self.lr * np.sqrt(1.0 - self.beta2 ** self.iter) / (1.0 - self.beta1 ** self.iter)  # 学習率
         for i, p in enumerate(self.parameters):
-            self.m[i] += (1 - self.beta1) * (p.grad - self.m[i])
-            self.v[i] += (1 - self.beta2) * (p.grad ** 2 - self.v[i])
+            self.m[i] = self.beta1 * self.m[i] + (1 - self.beta1) * p.grad
+            self.v[i] = self.beta2 * self.v[i] + (1 - self.beta2) * (p.grad ** 2)
             p.param -= lr_t * self.m[i] / (np.sqrt(self.v[i]) + 1e-7)

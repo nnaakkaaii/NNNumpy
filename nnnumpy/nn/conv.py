@@ -3,7 +3,7 @@ from typing import List
 import numpy as np
 
 from ..base import Module, Parameter
-from .functional import im2col, col2im
+from .functional import col2im, im2col
 
 
 class Conv2D(Module):
@@ -46,22 +46,22 @@ class Conv2D(Module):
 
         shape = (batch_size, self.out_channels, out_height, out_width)
         out = np.array(np.hsplit(out, batch_size)).reshape(shape)
+        out = out.reshape((self.out_channels, out_height, out_width, batch_size))
+        out = out.transpose(3, 0, 1, 2)
 
         return out
 
     def backward(self, dout: np.ndarray) -> np.ndarray:
-        batch_size = self.x_shape[0]
         self.db = np.sum(dout, axis=(0, 2, 3))
 
-        d0, d1, d2, d3 = dout.shape
-        dout = dout.reshape(d0 * d1, d2 * d3)
-        dout = np.array(np.vsplit(dout, batch_size))
-        dout = np.concatenate(dout, axis=-1)
-        dx_col = self.W_col.T @ dout
+        dout = dout.transpose(1, 2, 3, 0).reshape(self.out_channels, -1)
+
         dW_col = dout @ self.x_col.T
+        self.dW = dW_col.reshape(self.W_shape)
+
+        dx_col = self.W_col.T @ dout
         dx = col2im(dx_col, self.x_shape, self.filter_size, self.filter_size, self.stride, self.padding)
 
-        self.dW = dW_col.reshape(self.W_shape)
         return dx
 
     def parameters(self) -> List[Parameter]:

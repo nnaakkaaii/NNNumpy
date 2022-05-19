@@ -27,3 +27,15 @@ class ReLU(Module):
 
     def backward(self, dout: np.ndarray) -> np.ndarray:
         return np.where(self.x > 0, dout, 1e-7)
+
+
+class Tanh(Module):
+    def __init__(self) -> None:
+        self.y = None
+
+    def __call__(self, x: np.ndarray) -> np.ndarray:
+        self.y = np.tanh(x)
+        return self.y
+
+    def backward(self, dout: np.ndarray) -> np.ndarray:
+        return dout * (1 - self.y ** 2)

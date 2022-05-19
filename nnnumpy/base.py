@@ -62,3 +62,20 @@ class Optimizer(metaclass=abc.ABCMeta):
     @abc.abstractmethod
     def step(self) -> None:
         pass
+
+
+class Transform(metaclass=abc.ABCMeta):
+
+    def __call__(self, x: np.ndarray) -> np.ndarray:
+        """
+        :param x: (784,)
+        """
+        return np.apply_along_axis(self.transform, axis=1, arr=x)
+
+    @abc.abstractmethod
+    def transform(self, x: np.ndarray) -> np.ndarray:
+        """
+        :param x: (784,)
+        :return: (784,)
+        """
+        pass
