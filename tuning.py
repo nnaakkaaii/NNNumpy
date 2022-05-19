@@ -135,8 +135,8 @@ class Tuner:
             'transform_name': transform_name,
             'history': history,
         }
-        with open(os.path.join(self.result_dir, f'{dt}_{max_acc_score}_at_{max_acc_iter}.json'), 'wb') as f:
-            json.dump(record, f)
+        with open(os.path.join(self.result_dir, f'{dt}_{max_acc_score}_at_{max_acc_iter}.json'), 'w') as f:
+            json.dump(record, f, indent=4)
 
         return max_acc_score
 
