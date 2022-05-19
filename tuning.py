@@ -142,5 +142,6 @@ class Tuner:
 
 
 if __name__ == '__main__':
-    tuner = Tuner()
+    tuner = Tuner(batch_size=5096)
     tuner.optimize()
+
