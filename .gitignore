@@ -1,5 +1,6 @@
 *.db
 data/
+!nnnumpy/data/
 tuning_results/
 
 # Byte-compiled / optimized / DLL files
