@@ -18,7 +18,6 @@ def engine(net: Module,
 
     history = {'train_loss': [], 'train_acc': [], 'test_loss': [], 'test_acc': []}
 
-    accuracy = 0.
     train_n = len(train_x)
     test_n = len(test_x)
 
